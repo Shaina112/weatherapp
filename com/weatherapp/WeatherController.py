@@ -1,5 +1,6 @@
 from flask import Flask, request, Response
 import json
+from validator import Validator
 
 app = Flask(__name__)
 
@@ -13,57 +14,26 @@ def get_weather():
 def add_weather():
     request_data = request.data
     # got the json data in string in the above line
-    error_field = ""
     weather_dict = json.loads(request_data)
-    if 'city' in weather_dict and len(str(weather_dict['city']).strip())>0:
-        city = str(weather_dict['city'])
-    else:
-        error_field += "city "
+    #validation done here
+    error_fields = Validator.validate_request(weather_dict)
+    if (len(error_fields) > 0):
+        error_status = "\"message\":\"{} value is required\"".format(error_fields)
+        response = Response(error_status, status=400, content_type="application/json")
+        return response
+    #valid data, now process it
+    city = str(weather_dict['city'])
+    state = str(weather_dict['state'])
 
-    if 'state' in weather_dict and len(str(weather_dict['state']).strip())>0:
-        state = str(weather_dict['state'])
-    else:
-        error_field += "state "
-
-    if 'country' in weather_dict and len(str(weather_dict["country"]).strip())>0:
-        country = str(weather_dict['country'])
-    else:
-        error_field += "country "
-
-
-    if 'latitude' in weather_dict and len(str(weather_dict['latitude']).strip())>0:
-        latitude = str(weather_dict['latitude'])
-    else:
-        error_field += "latitude "
-
-    if 'longitude' in weather_dict and len(str(weather_dict['longitude']).strip())>0:
-        longitude = str(weather_dict['longitude'])
-    else:
-        error_field += "longitude "
-
-    if 'temperature' in weather_dict and len(str(weather_dict['temperature']).strip())>0:
-        temperature = str(weather_dict['temperature'])
-    else:
-        error_field += "temperature "
-
-    if 'timestamp' in weather_dict and len(str(weather_dict['timestamp']).strip())>0:
-        timestamp = str(weather_dict['timestamp'])
-    else:
-        error_field += "timestamp "
-
-
+    country = str(weather_dict['country'])
+    latitude = str(weather_dict['latitude'])
+    longitude = str(weather_dict['longitude'])
+    temperature = str(weather_dict['temperature'])
+    timestamp = str(weather_dict['timestamp'])
 
     # logic to manipulate data and save it to database.
 
-
-
-
-    error_status="\"message\":\"{} value is required\"".format(error_field)
-    if(len(error_field) > 0):
-        response = Response(error_status, status=400, content_type="application/json")
-        return response
-    return city
-
+    return "temperature in city {} is {}".format(city, temperature)
 
 
 @app.route('/weather', methods=['PUT'])
